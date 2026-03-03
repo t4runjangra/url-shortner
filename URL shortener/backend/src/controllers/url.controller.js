@@ -1,5 +1,8 @@
 import { URL } from "../model/url.model.js";
 import { nanoid } from "nanoid";
+import { trackClick}  from "../services/tracking.service.js";
+import { Click } from "../model/click.model.js";
+
 
 export const createShortUrl = async (req, res) => {
   try {
@@ -57,6 +60,8 @@ export const redirectUrl = async (req, res) => {
     if (!urlDoc) {
       return res.status(404).json({ message: "Short URL not found" });
     }
+     await trackClick(urlDoc, req);
+
 
     urlDoc.totalClicks += 1;
     await urlDoc.save();
@@ -157,4 +162,20 @@ export const updateUrl = async (req, res) => {
     });
   }
 };
+
+
+export const Urlinfo = async (req , res) => {
+  try {
+    const urlinfo = await Click.find({urlId : req.params.id});
+  
+    if(!urlinfo){
+      return res.status(400).json({message : "URL information is not found "});
+    }
+  
+    return res.status(200).json({urlinfo})
+  } catch (error) {
+    return res.status(500).json({message : "Server error" , error : error.message , stack : error.stack})
+  }
+}
+
 
