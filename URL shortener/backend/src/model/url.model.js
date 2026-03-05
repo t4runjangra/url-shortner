@@ -16,8 +16,12 @@
         required: true,
         unique: true,
       },
-      expireAt: {
-        type: String,
+      isActiveQr : {
+        type : Boolean,
+        default : false,
+      },
+      Qrcode : {
+        type : String,
       },
       isActive: {
         type: Boolean,

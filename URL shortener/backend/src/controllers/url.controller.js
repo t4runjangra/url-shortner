@@ -1,12 +1,12 @@
 import { URL } from "../model/url.model.js";
 import { nanoid } from "nanoid";
-import { trackClick}  from "../services/tracking.service.js";
+import { trackClick } from "../services/tracking.service.js";
 import { Click } from "../model/click.model.js";
-
+import QRCode from "qrcode";
 
 export const createShortUrl = async (req, res) => {
   try {
-    const { originalUrl, customName } = req.body;
+    const { originalUrl, customName, qrcode } = req.body;
 
     if (!originalUrl || originalUrl.trim() === "") {
       return res.status(400).json({ message: "Original URL is required" });
@@ -32,21 +32,35 @@ export const createShortUrl = async (req, res) => {
       } while (existing);
     }
 
-    const newUrl = await URL.create({
-      shortID,
-      originalUrl: originalUrl.trim(),
-      userID: req.user._id,
-    });
-
-    return res.status(201).json({
-      message: "Short URL created successfully",
-      newUrl,
-    });
+    if (qrcode === "true") {
+      const shortUrl = `http://localhost:8000/api/v1/url/${shortID}`;
+      const qr = await QRCode.toDataURL(shortUrl);
+      const newUrl = await URL.create({
+        shortID,
+        originalUrl: originalUrl.trim(),
+        userID: req.user._id,
+        Qrcode: qr,
+      });
+      return res.status(201).json({
+        message: "Short URL created successfully",
+        newUrl,
+      });
+    } else {
+      const newUrl = await URL.create({
+        shortID,
+        originalUrl: originalUrl.trim(),
+        userID: req.user._id,
+      });
+      return res.status(201).json({
+        message: "Short URL created successfully",
+        newUrl,
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
-      error : error.message ,
-      stack : error.stack
+      error: error.message,
+      stack: error.stack,
     });
   }
 };
@@ -62,8 +76,7 @@ export const redirectUrl = async (req, res) => {
     if (!urlDoc) {
       return res.status(404).json({ message: "Short URL not found" });
     }
-     await trackClick(urlDoc, req);
-
+    await trackClick(urlDoc, req);
 
     urlDoc.totalClicks += 1;
     await urlDoc.save();
@@ -100,26 +113,23 @@ export const deleteUrl = async (req, res) => {
 
     return res.status(200).json({ message: "URL is deleted succfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "somthing went wrong ",
-        error: error.message,
-        stuck: error.stack,
-      });
+    return res.status(500).json({
+      message: "somthing went wrong ",
+      error: error.message,
+      stuck: error.stack,
+    });
   }
 };
 
 export const updateUrl = async (req, res) => {
   try {
-    const { originalUrl, customName } = req.body;
+    const { originalUrl, customName, qrcode } = req.body;
 
-    if (!originalUrl && !customName) {
+    if (!originalUrl && !customName && !qrcode) {
       return res.status(400).json({
         message: "Provide at least one field to update",
       });
     }
-
 
     const url = await URL.findById(req.params.id);
 
@@ -151,13 +161,21 @@ export const updateUrl = async (req, res) => {
       url.shortID = trimmedName;
     }
 
+    if (qrcode === "true") {
+      const shortUrl = `http://localhost:8000/api/v1/url/${url.shortID}`;
+      const qr = await QRCode.toDataURL(shortUrl);
+      url.Qrcode = qr;
+    }
+
+    if (qrcode === "false") {
+      url.Qrcode = undefined;
+    }
     await url.save();
 
     return res.status(200).json({
       message: "URL updated successfully",
       url,
     });
-
   } catch (error) {
     return res.status(500).json({
       message: "Something went wrong",
@@ -165,20 +183,25 @@ export const updateUrl = async (req, res) => {
   }
 };
 
-
-export const Urlinfo = async (req , res) => {
+export const Urlinfo = async (req, res) => {
   try {
-    const urlinfo = await Click.find({urlId : req.params.id});
-  
-    if(!urlinfo){
-      return res.status(400).json({message : "URL information is not found "});
+    const urlinfo = await Click.find({ urlId: req.params.id });
+
+    if (!urlinfo) {
+      return res.status(400).json({ message: "URL information is not found " });
     }
-  
-    return res.status(200).json({urlinfo})
+
+    return res.status(200).json({ urlinfo });
   } catch (error) {
-    return res.status(500).json({message : "Server error" , error : error.message , stack : error.stack})
+    return res
+      .status(500)
+      .json({
+        message: "Server error",
+        error: error.message,
+        stack: error.stack,
+      });
   }
-}
+};
 
 export const serchUrl = async (req, res) => {
   try {
@@ -186,31 +209,30 @@ export const serchUrl = async (req, res) => {
 
     if (!query) {
       return res.status(400).json({
-        message: "Search query is required"
+        message: "Search query is required",
       });
     }
 
     const url = await URL.find(
       {
-        userID: req.user._id,   // VERY IMPORTANT (security)
-        $text: { $search: query }
+        userID: req.user._id, // VERY IMPORTANT (security)
+        $text: { $search: query },
       },
       {
-        score: { $meta: "textScore" }  // relevance score
-      }
+        score: { $meta: "textScore" }, // relevance score
+      },
     ).sort({
-      score: { $meta: "textScore" }    // sort by relevance
+      score: { $meta: "textScore" }, // sort by relevance
     });
 
     return res.status(200).json({
       count: url.length,
-      url
+      url,
     });
-
   } catch (error) {
     return res.status(500).json({
       message: "Search failed",
-      error: error.message
+      error: error.message,
     });
   }
 };
