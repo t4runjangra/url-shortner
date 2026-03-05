@@ -85,19 +85,6 @@ export const TotalUser = async (req, res) => {
   }
 };
 
-export const TotalURL = async (req, res) => {
-  try {
-    const url = await URL.find()
-      .sort({ createdAt: -1 })
-     
-
-    return res.status(200).json({ url, count: url.length });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to fetch user" });
-  }
-};
-
-
 export const updateUserInfo = async (req, res) => {
   try {
     const { FullName, email } = req.body;
@@ -125,6 +112,88 @@ export const updateUserInfo = async (req, res) => {
   }
 };  
 
+export const userUrl = async (req , res) => {
+ try {
+   const url = await URL.find({userID : req.params.id})
+ 
+   if(!url){
+     return res.status(400).json({message : "User url is not found "});
+   }
+ 
+   return res.status(200).json({url})
+ } catch (error) {
+    return res.status(500).json({message : "Somthing went wrong "})
+ }
+}
+
+export const deleteUser = async (req , res) => {
+  try {
+    const user = await User.findOne({_id : req.params.id});
+
+    if(!user) {
+      return res.status(400).json({message : "user is not found to delete"});
+    }
+
+     await user.deleteOne();
+    return res.status(200).json({ message: "user is deleted succfully" });
+  } catch (error) {
+     return res
+      .status(500)
+      .json({
+        message: "somthing went wrong ",
+        error: error.message,
+        stuck: error.stack,
+      });
+  }
+}
+
+
+export const serchUser = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        message: "Search query is required"
+      });
+    }
+
+    const user = await User.find(
+      {
+        // _id: req.user._id,   // VERY IMPORTANT (security)
+        $text: { $search: query }
+      },
+      {
+        score: { $meta: "textScore" }  // relevance score
+      }
+    ).sort({
+      score: { $meta: "textScore" }    // sort by relevance
+    });
+
+    return res.status(200).json({
+      count: user.length,
+      user
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Search failed",
+      error: error.message
+    });
+  }
+};
+
+export const TotalURL = async (req, res) => {
+  try {
+    const url = await URL.find()
+      .sort({ createdAt: -1 })
+     
+
+    return res.status(200).json({ url, count: url.length });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
 
 export const updateUrl = async (req, res) => {
   try {
@@ -175,4 +244,65 @@ export const updateUrl = async (req, res) => {
     });
   }
 };
+
+export const deleteUrl = async (req, res) => {
+  try {
+    const url = await URL.findById(req.params.id);
+
+    if (!url) {
+      return res.status(400).json({ message: "Url is not found " });
+    }
+
+    await url.deleteOne();
+
+    return res.status(200).json({ message: "URL is deleted succfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        message: "somthing went wrong ",
+        error: error.message,
+        stuck: error.stack,
+      });
+  }
+};
+
+
+export const serchUrl = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        message: "Search query is required"
+      });
+    }
+
+    const url = await URL.find(
+      {
+        $text: { $search: query }
+      },
+      {
+        score: { $meta: "textScore" }  // relevance score
+      }
+    ).sort({
+      score: { $meta: "textScore" }    // sort by relevance
+    });
+
+    return res.status(200).json({
+      count: url.length,
+      url
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Search failed",
+      error: error.message
+    });
+  }
+}
+
+
+
+
 

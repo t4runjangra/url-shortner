@@ -37,6 +37,13 @@ const UserModel = new Schema({
 UserModel.index({
     _id : 1 , createdAt: 1 
 })
+
+UserModel.index({
+    username : "text",
+    FullName : "text",
+    email : "text"
+})
+
 UserModel.pre("save" , async function () {
   if(!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password , 10); 
