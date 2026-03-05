@@ -45,6 +45,8 @@ export const createShortUrl = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
+      error : error.message ,
+      stack : error.stack
     });
   }
 };
@@ -178,4 +180,37 @@ export const Urlinfo = async (req , res) => {
   }
 }
 
+export const serchUrl = async (req, res) => {
+  try {
+    const { query } = req.query;
 
+    if (!query) {
+      return res.status(400).json({
+        message: "Search query is required"
+      });
+    }
+
+    const url = await URL.find(
+      {
+        userID: req.user._id,   // VERY IMPORTANT (security)
+        $text: { $search: query }
+      },
+      {
+        score: { $meta: "textScore" }  // relevance score
+      }
+    ).sort({
+      score: { $meta: "textScore" }    // sort by relevance
+    });
+
+    return res.status(200).json({
+      count: url.length,
+      url
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Search failed",
+      error: error.message
+    });
+  }
+};
