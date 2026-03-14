@@ -18,7 +18,8 @@ app.use(cookieParser());
 
 import userRoute from "./routes/user.routes.js"
 import addressRoute from "./routes/address.routes.js"
-
+import adminRoute from "./routes/admin.routes.js"
 app.use("/api/v1/users" , userRoute);
 app.use("/api/v1/address" , addressRoute);
+app.use("/api/v1/admin", adminRoute)
 export {app}
