@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Users, Mail } from "lucide-react";
 import API from "@/service/Api";
 
 export default function Admin() {
@@ -25,27 +25,40 @@ export default function Admin() {
   }, []);
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-50">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>Admin Panel - All Users</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="w-full max-w-5xl mx-auto py-8">
+      <div className="mb-8 flex items-center gap-3">
+        <Users className="text-black w-8 h-8" />
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-black">Admin Panel</h1>
+          <p className="text-gray-500">Manage registered users.</p>
+        </div>
+      </div>
+
+      <Card className="border-border shadow-sm rounded-xl overflow-hidden">
+        <CardContent className="p-0">
           {loading ? (
-            <div>Loading...</div>
+            <div className="p-12 text-center text-gray-500 font-medium animate-pulse">Loading users...</div>
           ) : error ? (
-            <div className="text-red-500">{error}</div>
+            <div className="p-12 text-center text-red-500 font-medium">{error}</div>
           ) : users.length === 0 ? (
-            <div>No users found.</div>
+            <div className="p-16 text-center text-gray-500">No users found.</div>
           ) : (
-            <div className="space-y-4">
-              {users.map((user) => (
-                <div key={user._id} className="border rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <div className="font-medium break-all">{user.name}</div>
-                    <div className="text-sm text-gray-500 break-all">{user.email}</div>
+            <div className="divide-y divide-gray-100">
+              {users.map((u) => (
+                <div key={u._id} className="p-5 sm:p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-black uppercase text-white font-bold rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                      {u.name?.charAt(0) || "U"}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-lg text-black">{u.name || "Unknown User"}</div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
+                        <Mail size={14} className="text-gray-400" />
+                        {u.email}
+                      </div>
+                    </div>
                   </div>
-                  {/* Add more admin actions here if needed */}
+                  {/* Actions can be added here */}
                 </div>
               ))}
             </div>
