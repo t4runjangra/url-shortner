@@ -1,46 +1,73 @@
-import { useContext } from 'react'
-import './App.css'
+// App.jsx
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/login";
+import Signup from "./pages/Signup";
+import CreatePage from "./pages/CreateNewLink";
+import Dashboard from "./pages/Dashboard";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
+import SidebarLayout from "./components/SidebarLayout";
+import { useContext } from "react";
+import { AuthContext } from "./Contexts/auth.context";
 
-import Login from './pages/login.jsx';
-import Signup from './pages/Signup';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-
-import Admin from './pages/Admin';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
-import { AuthContext } from './Contexts/auth.context';
-import SidebarLayout from './components/SidebarLayout';
-
-function App() {
-  const {user} = useContext(AuthContext)
-
-  return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          {/* Guest Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/Home" element={<Navigate to='/' />} />
-          
-          <Route path="/login" element={!user ? <Login/> : <Navigate to='/dashboard' />} />
-          <Route path="/signup" element={!user ? <Signup/> : <Navigate to='/dashboard'/>}/>
-          
-          {/* Protected Dashboard Routes */}
-          <Route element={user ? <SidebarLayout /> : <Navigate to='/login' />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/admin" element={<Admin />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to='/' />}/>
-        </Routes>
-      </BrowserRouter>
-    </>
-  )
+function ProtectedRoute({ children }) {
+  const { user } = useContext(AuthContext);
+  return user ? children : <Navigate to="/login" replace />;
 }
 
-export default App
+function GuestRoute({ children }) {
+  const { user } = useContext(AuthContext);
+  return user ? <Navigate to="/app" replace /> : children;
+}
 
+export default function App() {
+  const { user } = useContext(AuthContext);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/app" replace /> : <Home />
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <GuestRoute>
+              <Signup />
+            </GuestRoute>
+          }
+        />
+
+        <Route
+          path="/app"
+          element={
+            <ProtectedRoute>
+              <SidebarLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<CreatePage />} />
+          <Route path="links" element={<Dashboard />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="admin" element={<Admin />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

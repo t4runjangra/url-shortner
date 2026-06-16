@@ -82,7 +82,7 @@ export default function Analytics() {
           <CardDescription>Click volume across all your active short links</CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="h-[400px] w-full">
+          <div className="h-100 w-full">
             {loading ? (
                <div className="h-full w-full flex items-center justify-center text-gray-400 font-medium">Loading chart data...</div>
             ) : (

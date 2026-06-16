@@ -31,12 +31,12 @@ export default function Settings() {
               <Input defaultValue={user?.email} disabled />
             </div>
             <div className="pt-4">
-               <Button className="bg-[#ee6123] hover:bg-[#d5551c] text-white">Save Changes</Button>
+               <Button className="bg-orange hover:bg-[#d5551c] text-white">Save Changes</Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm rounded-xl border-red-100">
+        <Card className="border-border shadow-sm rounded-xl">
           <CardHeader>
             <CardTitle className="text-red-600">Danger Zone</CardTitle>
             <CardDescription>Permanently delete your account and all associated data.</CardDescription>
