@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link2, Copy, Check, BarChart2, Calendar, Trash, QrCode, X } from "lucide-react";
 import API from "@/service/Api";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Dashboard() {
@@ -13,24 +14,7 @@ export default function Dashboard() {
   const [copiedId, setCopiedId] = useState(null);
   const [selectedUrl, setSelectedUrl] = useState(null);
   const [showQrModal, setShowQrModal] = useState(false);
-
-  // console.log(urls);
-  
-
-  // const [stats, setStats] = useState(null);
-
-  // useEffect(() => {
-  //   async function fetchStats() {
-  //     try {
-  //       const res = await API.get(`/click/stats/${urlId}`);
-  //       setStats(res.data);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-
-  //   fetchStats();
-  // }, [urlId]);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -40,7 +24,6 @@ export default function Dashboard() {
       try {
         const res = await API.get("/url/getUrl");
         setUrls(res.data?.urls || []);
-        // console.log("Respone", res);
 
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch URLs");
@@ -87,7 +70,13 @@ export default function Dashboard() {
     <div className="w-full max-w-5xl mx-auto py-4">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-navy">Links</h1>
-        <Button className="bg-orange hover:bg-[#d5551c] text-white">Create new</Button>
+        <Button
+          type="button"
+          className="bg-orange hover:bg-[#d5551c] text-white"
+          onClick={() => navigate("/app")}
+        >
+          Create new
+        </Button>
       </div>
 
       <Card className="border-border shadow-sm rounded-xl bg-white min-h-125">
@@ -128,7 +117,14 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between w-full  gap-4 text-xs font-medium text-gray-400">
                         <div className="flex">
                           <div className="flex items-center gap-1"><Calendar size={14} /> Created recently</div>
-                          <div className="flex items-center gap-1 text-navy bg-[#f4f6fa] px-2 py-0.5 rounded-md"><BarChart2 size={14} className="text-orange" /> {clicks} Engagements</div>
+                          <div className="flex items-center gap-1 text-navy bg-[#f4f6fa] px-2 py-0.5 rounded-md"><BarChart2 size={14} className="text-orange" /> <button
+                            onClick={() => {
+                              localStorage.setItem("urlId", url._id);
+                              navigate(`/app/analytics/${url._id}`);
+                            }}
+                          >
+                            Analytics
+                          </button></div>
                         </div>
 
                       </div>

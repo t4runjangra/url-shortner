@@ -62,6 +62,7 @@ export default function App() {
           <Route index element={<CreatePage />} />
           <Route path="links" element={<Dashboard />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="analytics/:id" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
           <Route path="admin" element={<Admin />} />
         </Route>
